@@ -4,11 +4,11 @@ description: "Avoid system-reserved UI regions when building mini app webviews"
 icon: "border-outer"
 ---
 
-Mini app webviews run inside the MentraOS companion app on the user's phone. The top-right corner of the webview is reserved for the MentraOS capsule menu (≡ / ✕), so your content must stay clear of it.
+Mini app webviews run inside the MentraOS companion app on the user's phone. There are two areas of the screen you need to keep clear of: the capsule menu at the top right, and the system navigation at the bottom.
 
 ## The capsule menu
 
-The capsule menu is an overlay that sits on top of your webview. It lets users access app actions and exit the mini app.
+The capsule menu floats over the top-right corner of your webview. It has the ellipsis (≡) and close (✕) buttons that let users access app actions and leave your mini app.
 
 | Property | Value |
 |----------|-------|
@@ -17,7 +17,7 @@ The capsule menu is an overlay that sits on top of your webview. It lets users a
 | Right offset | 8 px |
 | Shape | Pill (fully rounded) |
 
-Don't place interactive elements like buttons, menus, tabs, navigation actions, floating actions, or popovers behind the capsule. They won't be tappable.
+Anything you put behind it won't be tappable. Keep buttons, menus, tabs, and navigation actions out of that corner.
 
 <Frame>
   <img src="/static/img/safe-area-diagram.png" alt="Safe area diagram showing the capsule menu in the top-right corner and the safe content area below" style={{ maxWidth: '300px', margin: '0 auto', display: 'block' }} />
@@ -25,23 +25,23 @@ Don't place interactive elements like buttons, menus, tabs, navigation actions, 
 
 ## Bottom system navigation
 
-On Android, MentraOS renders your webview above the system navigation bar (gesture bar or 3-button nav). Your content area does not extend behind it, so you don't need to account for it yourself.
+On Android, MentraOS renders your webview above the system navigation bar (gesture bar or 3-button nav), so your content won't end up behind it.
 
-On iOS, the system home indicator area is handled by the webview. If you need to adjust for it, use the standard CSS environment variable:
+On iOS, you can use the standard CSS environment variable if you need to clear the home indicator:
 
 ```css
 padding-bottom: env(safe-area-inset-bottom);
 ```
 
-In general, avoid placing primary actions or tab bars flush against the bottom edge of the screen. A small amount of padding keeps things comfortable across devices.
+Either way, don't put important buttons or tab bars right at the bottom edge. Give them some breathing room.
 
 ## Using the SDK
 
-`@mentra/react` exposes the capsule's bounding rect and a derived `safeAreaTop` value so your layout can adapt without hardcoding pixel values. Outside MentraOS (e.g. in a browser during development), the rect is `null` and `safeAreaTop` is `0`, so your app renders normally.
+`@mentra/react` gives you the capsule's position so you can adjust your layout without hardcoding pixel values. When your app runs outside MentraOS (like in a browser during development), the values fall back to safe defaults and your layout renders normally.
 
 ### `useCapsuleMenu` hook
 
-Most apps just need enough top padding to clear the capsule:
+Most apps just need top padding to clear the capsule:
 
 ```tsx
 import { useCapsuleMenu } from "@mentra/react"
@@ -57,11 +57,11 @@ function MyScreen() {
 }
 ```
 
-`safeAreaTop` equals `rect.bottom + 8` when running inside MentraOS, and `0` otherwise.
+`safeAreaTop` is `rect.bottom + 8` inside MentraOS, `0` otherwise.
 
 ### `getCapsuleMenuRect()`
 
-If you need fine-grained control (e.g. positioning a header beside the capsule), read the full rect:
+If you need more control (e.g. positioning a header next to the capsule), grab the full rect:
 
 ```tsx
 import { getCapsuleMenuRect } from "@mentra/react"
@@ -85,9 +85,9 @@ interface CapsuleMenuRect {
 }
 ```
 
-### Reading the rect without the SDK
+### Without the SDK
 
-The MentraOS app injects a `window.MentraOS` object into every mini app webview before content loads. You can read the capsule rect directly if you aren't using `@mentra/react`:
+MentraOS injects a `window.MentraOS` object into every mini app webview before your content loads. You can read the capsule rect directly:
 
 ```ts
 if (window.MentraOS?.capsuleMenu) {
@@ -95,7 +95,7 @@ if (window.MentraOS?.capsuleMenu) {
 }
 ```
 
-`window.MentraOS` also includes `platform` (`"ios"` or `"android"`) and a `capabilities` array.
+`window.MentraOS` also has `platform` (`"ios"` or `"android"`) and a `capabilities` array.
 
 ## Next Steps
 
