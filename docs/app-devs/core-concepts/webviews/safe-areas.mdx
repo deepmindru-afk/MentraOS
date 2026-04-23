@@ -23,6 +23,18 @@ Don't place interactive elements like buttons, menus, tabs, navigation actions, 
   <img src="/static/img/safe-area-diagram.png" alt="Safe area diagram showing the capsule menu in the top-right corner and the safe content area below" style={{ maxWidth: '300px', margin: '0 auto', display: 'block' }} />
 </Frame>
 
+## Bottom system navigation
+
+On Android, MentraOS renders your webview above the system navigation bar (gesture bar or 3-button nav). Your content area does not extend behind it, so you don't need to account for it yourself.
+
+On iOS, the system home indicator area is handled by the webview. If you need to adjust for it, use the standard CSS environment variable:
+
+```css
+padding-bottom: env(safe-area-inset-bottom);
+```
+
+In general, avoid placing primary actions or tab bars flush against the bottom edge of the screen. A small amount of padding keeps things comfortable across devices.
+
 ## Using the SDK
 
 `@mentra/react` exposes the capsule's bounding rect and a derived `safeAreaTop` value so your layout can adapt without hardcoding pixel values. Outside MentraOS (e.g. in a browser during development), the rect is `null` and `safeAreaTop` is `0`, so your app renders normally.
