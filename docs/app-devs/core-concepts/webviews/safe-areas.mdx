@@ -1,12 +1,14 @@
 ---
 title: "Safe Areas & Layout"
-description: "Avoid system-reserved UI regions when building Mini App webviews"
+description: "Avoid system-reserved UI regions when building mini app webviews"
 icon: "border-outer"
 ---
 
-Mini App webviews run inside the MentraOS companion app. The top-right corner of the webview is reserved for the MentraOS capsule menu (≡ / ✕) — your content must stay clear of it.
+Mini app webviews run inside the MentraOS companion app on the user's phone. The top-right corner of the webview is reserved for the MentraOS capsule menu (≡ / ✕), so your content must stay clear of it.
 
 ## The capsule menu
+
+The capsule menu is an overlay that sits on top of your webview. It lets users access app actions and exit the mini app.
 
 | Property | Value |
 |----------|-------|
@@ -15,7 +17,7 @@ Mini App webviews run inside the MentraOS companion app. The top-right corner of
 | Right offset | 8 px |
 | Shape | Pill (fully rounded) |
 
-Don't place buttons, menus, badges, tabs, navigation actions, floating actions, status indicators, or popovers behind the capsule.
+Don't place interactive elements like buttons, menus, tabs, navigation actions, floating actions, or popovers behind the capsule. They won't be tappable.
 
 <Frame>
   <img src="/static/img/safe-area-diagram.png" alt="Safe area diagram showing the capsule menu in the top-right corner and the safe content area below" style={{ maxWidth: '300px', margin: '0 auto', display: 'block' }} />
@@ -23,7 +25,7 @@ Don't place buttons, menus, badges, tabs, navigation actions, floating actions, 
 
 ## Using the SDK
 
-`@mentra/react` exposes the capsule's bounding rect and a derived `safeAreaTop` value so your layout can adjust without hardcoding pixels. Outside MentraOS (e.g. a browser preview), the rect is `null` and `safeAreaTop` is `0`, so your app renders normally.
+`@mentra/react` exposes the capsule's bounding rect and a derived `safeAreaTop` value so your layout can adapt without hardcoding pixel values. Outside MentraOS (e.g. in a browser during development), the rect is `null` and `safeAreaTop` is `0`, so your app renders normally.
 
 ### `useCapsuleMenu` hook
 
@@ -37,17 +39,17 @@ function MyScreen() {
 
   return (
     <div style={{ paddingTop: safeAreaTop }}>
-      <h1>My Mini App</h1>
+      <h1>Hello world</h1>
     </div>
   )
 }
 ```
 
-`safeAreaTop` is `rect.bottom + 8` when inside MentraOS, `0` otherwise.
+`safeAreaTop` equals `rect.bottom + 8` when running inside MentraOS, and `0` otherwise.
 
 ### `getCapsuleMenuRect()`
 
-For fine-grained layout (e.g. positioning a header exactly next to the capsule), read the full rect:
+If you need fine-grained control (e.g. positioning a header beside the capsule), read the full rect:
 
 ```tsx
 import { getCapsuleMenuRect } from "@mentra/react"
@@ -71,13 +73,25 @@ interface CapsuleMenuRect {
 }
 ```
 
+### Reading the rect without the SDK
+
+The MentraOS app injects a `window.MentraOS` object into every mini app webview before content loads. You can read the capsule rect directly if you aren't using `@mentra/react`:
+
+```ts
+if (window.MentraOS?.capsuleMenu) {
+  const { top, right, bottom, left, width, height } = window.MentraOS.capsuleMenu
+}
+```
+
+`window.MentraOS` also includes `platform` (`"ios"` or `"android"`) and a `capabilities` array.
+
 ## Next Steps
 
 <CardGroup cols={2}>
   <Card title="React Webviews" icon="react" href="/app-devs/core-concepts/webviews/react-webviews">
     Build webviews with @mentra/react
   </Card>
-  <Card title="Hardware Capabilities" icon="microchip" href="/app-devs/core-concepts/device/hardware-capabilities">
+  <Card title="Hardware Capabilities" icon="microchip" href="/app-devs/core-concepts/hardware-capabilities/overview">
     Check device display capabilities
   </Card>
 </CardGroup>
